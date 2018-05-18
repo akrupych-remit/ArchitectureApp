@@ -11,8 +11,6 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.main_fragment.*
 import org.koin.android.architecture.ext.viewModel
 import uk.co.xlntech.architectureapp.R
-import uk.co.xlntech.architectureapp.data.Failure
-import uk.co.xlntech.architectureapp.data.Success
 
 class MainFragment : Fragment() {
 
@@ -26,12 +24,12 @@ class MainFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = TipsAdapter(context)
         }
-        viewModel.feed.observe(this, Observer { result ->
-            progressBar.visibility = View.GONE
-            when (result) {
-                is Success -> (recyclerView.adapter as TipsAdapter).setTips(result.items)
-                is Failure -> Snackbar.make(contentView, result.message, Snackbar.LENGTH_LONG).show()
-            }
-        })
+        viewModel.feed.observe(this, Observer { it?.let { tips ->
+            if (tips.isNotEmpty()) progressBar.visibility = View.GONE
+            (recyclerView.adapter as TipsAdapter).setTips(tips)
+        }})
+        viewModel.errors.observe(this, Observer { it?.message?.let { message ->
+            Snackbar.make(contentView, message, Snackbar.LENGTH_LONG).show()
+        }})
     }
 }
