@@ -4,6 +4,6 @@ import android.arch.lifecycle.ViewModel
 import uk.co.xlntech.architectureapp.data.MainRepository
 
 class MainViewModel(repository: MainRepository) : ViewModel() {
-    val feed = repository.loadFeed()
+    val feed = repository.feed
     val errors = repository.errors
 }

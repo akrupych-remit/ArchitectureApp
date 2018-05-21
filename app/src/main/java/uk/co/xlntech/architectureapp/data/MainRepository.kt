@@ -1,6 +1,8 @@
 package uk.co.xlntech.architectureapp.data
 
 import android.arch.lifecycle.LiveData
+import android.arch.paging.LivePagedListBuilder
+import android.arch.paging.PagedList
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -15,31 +17,52 @@ class MainRepository(
         private val api: WorldLobbyApi,
         private val db: WorldLobbyDatabase,
         private val pageSize: Int = 50
-) {
+) : PagedList.BoundaryCallback<TipSummary>() {
+
+    val feed: LiveData<PagedList<TipSummary>> =
+            LivePagedListBuilder(db.tipsDao().getTips(), pageSize)
+                    .setBoundaryCallback(this)
+                    .build()
     val errors = SingleLiveEvent<Throwable>()
 
+    private var offset = 0
+    private var isLoading = false
     private val dbExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
-    fun loadFeed(): LiveData<List<TipSummary>> {
-        // start loading new data
-        api.getFeed(skip = 0, limit = pageSize).enqueue(object : Callback<FeedPage> {
+    init {
+        loadFeed(0)
+    }
+
+    override fun onZeroItemsLoaded() {
+        loadFeed(0)
+    }
+
+    override fun onItemAtEndLoaded(itemAtEnd: TipSummary) {
+        offset += pageSize
+        loadFeed(offset)
+    }
+
+    private fun loadFeed(offset: Int) {
+        if (isLoading) return // BoundaryCallback can call this multiple times for single list
+        isLoading = true
+        api.getFeed(skip = offset, limit = pageSize).enqueue(object : Callback<FeedPage> {
             override fun onResponse(call: Call<FeedPage>, response: Response<FeedPage>) {
-                if (response.isSuccessful) saveFeed(response.body()!!.data)
+                if (response.isSuccessful) saveFeed(response.body()!!.data, offset == 0)
                 else errors.value = Exception(response.errorBody().toString())
+                isLoading = false
             }
             override fun onFailure(call: Call<FeedPage>?, t: Throwable) {
                 errors.value = t
+                isLoading = false
             }
         })
-        // return available items immediately
-        return db.tipsDao().getTips()
     }
 
-    private fun saveFeed(items: List<TipSummary>) {
+    private fun saveFeed(items: List<TipSummary>, clear: Boolean) {
         // observers will be triggered automatically
         dbExecutor.submit {
             db.runInTransaction {
-                db.tipsDao().clearTips()
+                if (clear) db.tipsDao().clearTips()
                 db.tipsDao().insertTips(items)
             }
         }

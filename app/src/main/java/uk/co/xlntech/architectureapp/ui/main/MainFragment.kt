@@ -26,7 +26,7 @@ class MainFragment : Fragment() {
         }
         viewModel.feed.observe(this, Observer { it?.let { tips ->
             if (tips.isNotEmpty()) progressBar.visibility = View.GONE
-            (recyclerView.adapter as TipsAdapter).setTips(tips)
+            (recyclerView.adapter as TipsAdapter).submitList(tips)
         }})
         viewModel.errors.observe(this, Observer { it?.message?.let { message ->
             Snackbar.make(contentView, message, Snackbar.LENGTH_LONG).show()

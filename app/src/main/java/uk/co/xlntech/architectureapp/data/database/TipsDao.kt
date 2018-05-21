@@ -1,6 +1,6 @@
 package uk.co.xlntech.architectureapp.data.database
 
-import android.arch.lifecycle.LiveData
+import android.arch.paging.DataSource
 import android.arch.persistence.room.Dao
 import android.arch.persistence.room.Insert
 import android.arch.persistence.room.OnConflictStrategy
@@ -10,7 +10,7 @@ import uk.co.xlntech.architectureapp.data.entities.TipSummary
 @Dao
 interface TipsDao {
     @Query("SELECT * FROM tips")
-    fun getTips(): LiveData<List<TipSummary>>
+    fun getTips(): DataSource.Factory<Int, TipSummary>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertTips(tips: List<TipSummary>)
