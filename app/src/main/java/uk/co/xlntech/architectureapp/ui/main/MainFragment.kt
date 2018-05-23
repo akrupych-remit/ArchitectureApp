@@ -5,9 +5,8 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.SearchView
 import kotlinx.android.synthetic.main.main_fragment.*
 import org.koin.android.architecture.ext.viewModel
 import uk.co.xlntech.architectureapp.R
@@ -15,6 +14,12 @@ import uk.co.xlntech.architectureapp.R
 class MainFragment : Fragment() {
 
     private val viewModel: MainViewModel by viewModel() // koin injection
+    private val tipsAdapter: TipsAdapter by lazy { TipsAdapter(context!!) }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?) =
             inflater.inflate(R.layout.main_fragment, container, false)!!
@@ -22,14 +27,35 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
-            adapter = TipsAdapter(context)
+            adapter = tipsAdapter
         }
         viewModel.feed.observe(this, Observer { it?.let { tips ->
             if (tips.isNotEmpty()) progressBar.visibility = View.GONE
-            (recyclerView.adapter as TipsAdapter).submitList(tips)
+            tipsAdapter.submitList(tips)
         }})
         viewModel.errors.observe(this, Observer { it?.message?.let { message ->
             Snackbar.make(contentView, message, Snackbar.LENGTH_LONG).show()
         }})
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_main, menu)
+        val searchView = menu.findItem(R.id.search).actionView as SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                viewModel.search(query).observe(this@MainFragment, Observer { it?.let { tips ->
+                    tipsAdapter.submitList(tips)
+                }})
+                return true
+            }
+            override fun onQueryTextChange(newText: String): Boolean {
+                if (newText.isEmpty()) tipsAdapter.submitList(viewModel.feed.value)
+                else viewModel.filter(newText).observe(this@MainFragment, Observer { it?.let { tips ->
+                    tipsAdapter.submitList(tips)
+                }})
+                return true
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
     }
 }

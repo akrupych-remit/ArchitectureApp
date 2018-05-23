@@ -20,6 +20,6 @@ class TipsAdapter(context: Context) : PagedListAdapter<TipSummary, TipViewHolder
             TipViewHolder(inflater.inflate(R.layout.layout_tip, parent, false))
 
     override fun onBindViewHolder(holder: TipViewHolder, position: Int) {
-        holder.bind(getItem(position)!!)
+        holder.bind(getItem(position))
     }
 }

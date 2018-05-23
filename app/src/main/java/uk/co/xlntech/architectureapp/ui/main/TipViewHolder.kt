@@ -10,22 +10,17 @@ import uk.co.xlntech.architectureapp.data.entities.TipSummary
 
 open class TipViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    val context = itemView.context
+    private val image: ImageView = itemView.findViewById(R.id.tipImage)
+    private val name: TextView = itemView.findViewById(R.id.tipName)
+    private val place: TextView = itemView.findViewById(R.id.tipPlace)
+    private val description: TextView = itemView.findViewById(R.id.tipDescription)
+    private val author: TextView = itemView.findViewById(R.id.tipAuthor)
 
-    val image = itemView.findViewById<ImageView>(R.id.tipImage)
-    val name = itemView.findViewById<TextView>(R.id.tipName)
-    val place = itemView.findViewById<TextView>(R.id.tipPlace)
-    val description = itemView.findViewById<TextView>(R.id.tipDescription)
-    val author = itemView.findViewById<TextView>(R.id.tipAuthor)
-
-    lateinit var tip: TipSummary
-
-    fun bind(tip: TipSummary) {
-        this.tip = tip
-        Glide.with(context).load(tip.image).into(image)
-        name.text = tip.name
-        place.text = tip.placeName
-        description.text = tip.description
-        author.text = tip.profileName
-    }
+    fun bind(tip: TipSummary?) { tip?.let {
+        Glide.with(itemView.context).load(it.image).into(image)
+        name.text = it.name
+        place.text = it.placeName
+        description.text = it.description
+        author.text = it.profileName
+    }}
 }

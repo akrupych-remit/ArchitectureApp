@@ -1,4 +1,4 @@
-package uk.co.xlntech.architectureapp.data
+package uk.co.xlntech.architectureapp.data.api
 
 import retrofit2.Call
 import retrofit2.Retrofit

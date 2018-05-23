@@ -12,6 +12,9 @@ interface TipsDao {
     @Query("SELECT * FROM tips")
     fun getTips(): DataSource.Factory<Int, TipSummary>
 
+    @Query("SELECT * FROM tips WHERE name LIKE :query")
+    fun getTips(query: String): DataSource.Factory<Int, TipSummary>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertTips(tips: List<TipSummary>)
 

@@ -6,6 +6,8 @@ import android.arch.paging.PagedList
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import uk.co.xlntech.architectureapp.data.api.TipsPagedDataSource
+import uk.co.xlntech.architectureapp.data.api.WorldLobbyApi
 import uk.co.xlntech.architectureapp.data.database.WorldLobbyDatabase
 import uk.co.xlntech.architectureapp.data.entities.FeedPage
 import uk.co.xlntech.architectureapp.data.entities.TipSummary
@@ -33,14 +35,16 @@ class MainRepository(
         loadFeed(0)
     }
 
-    override fun onZeroItemsLoaded() {
-        loadFeed(0)
-    }
-
     override fun onItemAtEndLoaded(itemAtEnd: TipSummary) {
         offset += pageSize
         loadFeed(offset)
     }
+
+    fun filter(query: String): LiveData<PagedList<TipSummary>> =
+            LivePagedListBuilder(db.tipsDao().getTips("%$query%"), pageSize).build()
+
+    fun search(query: String): LiveData<PagedList<TipSummary>> =
+            LivePagedListBuilder(TipsPagedDataSource.getFactory(api, query), pageSize).build()
 
     private fun loadFeed(offset: Int) {
         if (isLoading) return // BoundaryCallback can call this multiple times for single list
