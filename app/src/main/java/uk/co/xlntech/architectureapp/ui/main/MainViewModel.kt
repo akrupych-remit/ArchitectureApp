@@ -11,4 +11,6 @@ class MainViewModel(private val repository: MainRepository) : ViewModel() {
     fun filter(query: String) = repository.filter(query)
 
     fun search(query: String) = repository.search(query)
+
+    fun refresh() = repository.refresh()
 }

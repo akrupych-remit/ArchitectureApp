@@ -42,11 +42,16 @@ class MainFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = tipsAdapter
         }
+        swipeToRefresh.setOnRefreshListener {
+            viewModel.refresh()
+        }
         viewModel.feed.observe(this, Observer { it?.let { tips ->
+            swipeToRefresh.isRefreshing = false
             if (tips.isNotEmpty()) progressBar.visibility = View.GONE
             tipsAdapter.submitList(tips)
         }})
         viewModel.errors.observe(this, Observer { it?.message?.let { message ->
+            swipeToRefresh.isRefreshing = false
             Snackbar.make(contentView, message, Snackbar.LENGTH_LONG).show()
         }})
     }

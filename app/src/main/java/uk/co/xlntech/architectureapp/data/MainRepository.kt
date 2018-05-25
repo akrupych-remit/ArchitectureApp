@@ -53,6 +53,10 @@ class MainRepository(
     fun search(query: String): LiveData<PagedList<TipSummary>> =
             LivePagedListBuilder(TipsPagedDataSource.getFactory(api, locationManager, query), pageSize).build()
 
+    fun refresh() {
+        loadFeed(0)
+    }
+
     private fun loadFeed(offset: Int) {
         if (isLoading) return // BoundaryCallback can call this multiple times for single list
         isLoading = true
