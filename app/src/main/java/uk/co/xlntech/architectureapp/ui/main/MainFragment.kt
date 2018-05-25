@@ -1,24 +1,37 @@
 package uk.co.xlntech.architectureapp.ui.main
 
+import android.Manifest
 import android.arch.lifecycle.Observer
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
+import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.view.*
 import android.widget.SearchView
 import kotlinx.android.synthetic.main.main_fragment.*
 import org.koin.android.architecture.ext.viewModel
+import org.koin.android.ext.android.inject
 import uk.co.xlntech.architectureapp.R
+import uk.co.xlntech.architectureapp.data.MyLocationManager
 
 class MainFragment : Fragment() {
 
+    companion object {
+        private const val REQUEST_LOCATION = 0
+    }
+
     private val viewModel: MainViewModel by viewModel() // koin injection
     private val tipsAdapter: TipsAdapter by lazy { TipsAdapter(context!!) }
+    private val locationManager: MyLocationManager by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        requestPermissions()
+        lifecycle.addObserver(locationManager)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, state: Bundle?) =
@@ -57,5 +70,19 @@ class MainFragment : Fragment() {
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        lifecycle.removeObserver(locationManager)
+    }
+
+    private fun requestPermissions() {
+        if (ContextCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity!!,
+                    arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+                    REQUEST_LOCATION)
+        }
     }
 }

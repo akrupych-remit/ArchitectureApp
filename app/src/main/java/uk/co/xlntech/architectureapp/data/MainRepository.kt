@@ -1,23 +1,25 @@
 package uk.co.xlntech.architectureapp.data
 
 import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.Observer
 import android.arch.paging.LivePagedListBuilder
 import android.arch.paging.PagedList
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import android.location.Location
 import uk.co.xlntech.architectureapp.data.api.TipsPagedDataSource
 import uk.co.xlntech.architectureapp.data.api.WorldLobbyApi
 import uk.co.xlntech.architectureapp.data.database.WorldLobbyDatabase
-import uk.co.xlntech.architectureapp.data.entities.FeedPage
 import uk.co.xlntech.architectureapp.data.entities.TipSummary
 import uk.co.xlntech.architectureapp.utils.SingleLiveEvent
+import uk.co.xlntech.architectureapp.utils.component1
+import uk.co.xlntech.architectureapp.utils.component2
+import uk.co.xlntech.architectureapp.utils.enqueue
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class MainRepository(
         private val api: WorldLobbyApi,
         private val db: WorldLobbyDatabase,
+        private val locationManager: MyLocationManager,
         private val pageSize: Int = 50
 ) : PagedList.BoundaryCallback<TipSummary>() {
 
@@ -32,7 +34,12 @@ class MainRepository(
     private val dbExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     init {
-        loadFeed(0)
+        locationManager.locationLiveData.observeForever(object : Observer<Location> {
+            override fun onChanged(location: Location?) {
+                loadFeed(0)
+                locationManager.locationLiveData.removeObserver(this)
+            }
+        })
     }
 
     override fun onItemAtEndLoaded(itemAtEnd: TipSummary) {
@@ -44,22 +51,22 @@ class MainRepository(
             LivePagedListBuilder(db.tipsDao().getTips("%$query%"), pageSize).build()
 
     fun search(query: String): LiveData<PagedList<TipSummary>> =
-            LivePagedListBuilder(TipsPagedDataSource.getFactory(api, query), pageSize).build()
+            LivePagedListBuilder(TipsPagedDataSource.getFactory(api, locationManager, query), pageSize).build()
 
     private fun loadFeed(offset: Int) {
         if (isLoading) return // BoundaryCallback can call this multiple times for single list
         isLoading = true
-        api.getFeed(skip = offset, limit = pageSize).enqueue(object : Callback<FeedPage> {
-            override fun onResponse(call: Call<FeedPage>, response: Response<FeedPage>) {
-                if (response.isSuccessful) saveFeed(response.body()!!.data, offset == 0)
-                else errors.value = Exception(response.errorBody().toString())
-                isLoading = false
-            }
-            override fun onFailure(call: Call<FeedPage>?, t: Throwable) {
-                errors.value = t
-                isLoading = false
-            }
-        })
+        val (lat, lng) = locationManager.locationLiveData.value
+        api.getFeed(skip = offset, limit = pageSize, lat = lat, lng = lng).enqueue(
+                onResponse = { feedPage ->
+                    saveFeed(feedPage.data, offset == 0)
+                    isLoading = false
+                },
+                onFailure = { error ->
+                    errors.value = error
+                    isLoading = false
+                }
+        )
     }
 
     private fun saveFeed(items: List<TipSummary>, clear: Boolean) {

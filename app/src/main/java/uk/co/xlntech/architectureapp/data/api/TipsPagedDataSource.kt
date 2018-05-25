@@ -2,44 +2,38 @@ package uk.co.xlntech.architectureapp.data.api
 
 import android.arch.paging.DataSource
 import android.arch.paging.PositionalDataSource
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import uk.co.xlntech.architectureapp.data.entities.FeedPage
+import uk.co.xlntech.architectureapp.data.MyLocationManager
 import uk.co.xlntech.architectureapp.data.entities.TipSummary
+import uk.co.xlntech.architectureapp.utils.component1
+import uk.co.xlntech.architectureapp.utils.component2
+import uk.co.xlntech.architectureapp.utils.enqueue
 
 class TipsPagedDataSource(
         private val api: WorldLobbyApi,
+        private val locationManager: MyLocationManager,
         private val query: String
 ) : PositionalDataSource<TipSummary>() {
 
     companion object {
-        fun getFactory(api: WorldLobbyApi, query: String) = object : DataSource.Factory<Int, TipSummary>() {
-            override fun create() = TipsPagedDataSource(api, query)
-        }
+        fun getFactory(api: WorldLobbyApi, locationManager: MyLocationManager, query: String) =
+                object : DataSource.Factory<Int, TipSummary>() {
+                    override fun create() = TipsPagedDataSource(api, locationManager, query)
+                }
     }
 
     override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<TipSummary>) {
-        api.getFeed(skip = 0, limit = params.requestedLoadSize, search = query).enqueue(object : Callback<FeedPage> {
-            override fun onResponse(call: Call<FeedPage>, response: Response<FeedPage>) {
-                if (response.isSuccessful) callback.onResult(response.body()!!.data, 0, response.body()!!.totalCount)
-                else callback.onResult(emptyList(), 0)
-            }
-            override fun onFailure(call: Call<FeedPage>?, t: Throwable?) {
-                callback.onResult(emptyList(), 0)
-            }
-        })
+        val (lat, lng) = locationManager.locationLiveData.value
+        api.getFeed(skip = 0, limit = params.requestedLoadSize, search = query, lat = lat, lng = lng).enqueue(
+                onResponse = { feedPage -> callback.onResult(feedPage.data, 0, feedPage.totalCount) },
+                onFailure = { callback.onResult(emptyList(), 0) }
+        )
     }
 
     override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<TipSummary>) {
-        api.getFeed(skip = params.startPosition, limit = params.loadSize, search = query).enqueue(object : Callback<FeedPage> {
-            override fun onResponse(call: Call<FeedPage>, response: Response<FeedPage>) {
-                if (response.isSuccessful) callback.onResult(response.body()!!.data)
-                else callback.onResult(emptyList())
-            }
-            override fun onFailure(call: Call<FeedPage>?, t: Throwable?) {
-                callback.onResult(emptyList())
-            }
-        })
+        val (lat, lng) = locationManager.locationLiveData.value
+        api.getFeed(skip = params.startPosition, limit = params.loadSize, search = query, lat = lat, lng = lng).enqueue(
+                onResponse = { feedPage -> callback.onResult(feedPage.data) },
+                onFailure = { callback.onResult(emptyList()) }
+        )
     }
 }
