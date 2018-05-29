@@ -24,7 +24,7 @@ class MainFragment : Fragment() {
     }
 
     private val viewModel: MainViewModel by viewModel() // koin injection
-    private val tipsAdapter: TipsAdapter by lazy { TipsAdapter(context!!) }
+    private lateinit var tipsAdapter: TipsAdapter
     private val locationManager: MyLocationManager by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +40,7 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         recyclerView.apply {
             layoutManager = LinearLayoutManager(context)
+            tipsAdapter = TipsAdapter(context)
             adapter = tipsAdapter
         }
         swipeToRefresh.setOnRefreshListener {
@@ -67,7 +68,11 @@ class MainFragment : Fragment() {
                 return true
             }
             override fun onQueryTextChange(newText: String): Boolean {
-                if (newText.isEmpty()) tipsAdapter.submitList(viewModel.feed.value)
+                if (newText.isEmpty()) {
+                    tipsAdapter = TipsAdapter(searchView.context)
+                    recyclerView.adapter = tipsAdapter
+                    tipsAdapter.submitList(viewModel.feed.value)
+                }
                 else viewModel.filter(newText).observe(this@MainFragment, Observer { it?.let { tips ->
                     tipsAdapter.submitList(tips)
                 }})

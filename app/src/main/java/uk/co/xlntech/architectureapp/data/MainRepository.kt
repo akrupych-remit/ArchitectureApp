@@ -5,6 +5,7 @@ import android.arch.lifecycle.Observer
 import android.arch.paging.LivePagedListBuilder
 import android.arch.paging.PagedList
 import android.location.Location
+import android.util.Log
 import uk.co.xlntech.architectureapp.data.api.TipsPagedDataSource
 import uk.co.xlntech.architectureapp.data.api.WorldLobbyApi
 import uk.co.xlntech.architectureapp.data.database.WorldLobbyDatabase
@@ -36,6 +37,7 @@ class MainRepository(
     init {
         locationManager.locationLiveData.observeForever(object : Observer<Location> {
             override fun onChanged(location: Location?) {
+                Log.d("qwerty", "locationLiveData.onChanged $location")
                 loadFeed(0)
                 locationManager.locationLiveData.removeObserver(this)
             }
@@ -43,8 +45,8 @@ class MainRepository(
     }
 
     override fun onItemAtEndLoaded(itemAtEnd: TipSummary) {
-        offset += pageSize
-        loadFeed(offset)
+        Log.d("qwerty", "onItemAtEndLoaded")
+        loadFeed(offset + pageSize)
     }
 
     fun filter(query: String): LiveData<PagedList<TipSummary>> =
@@ -58,11 +60,14 @@ class MainRepository(
     }
 
     private fun loadFeed(offset: Int) {
+        Log.d("qwerty", "loadFeed $offset")
         if (isLoading) return // BoundaryCallback can call this multiple times for single list
         isLoading = true
+        this.offset = offset
         val (lat, lng) = locationManager.locationLiveData.value
         api.getFeed(skip = offset, limit = pageSize, lat = lat, lng = lng).enqueue(
                 onResponse = { feedPage ->
+                    Log.d("qwerty", "loadFeed $offset -> ${feedPage.data.map { it.name }}")
                     saveFeed(feedPage.data, offset == 0)
                     isLoading = false
                 },
@@ -74,6 +79,7 @@ class MainRepository(
     }
 
     private fun saveFeed(items: List<TipSummary>, clear: Boolean) {
+        Log.d("qwerty", "saveFeed ${items.map { it.name }} clear: $clear")
         // observers will be triggered automatically
         dbExecutor.submit {
             db.runInTransaction {
