@@ -1,98 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginLeft="10dp"
-    android:layout_marginTop="5dp"
-    android:layout_marginRight="10dp"
-    android:layout_marginBottom="5dp"
-    android:foreground="?android:attr/selectableItemBackground"
-    tools:ignore="RtlHardcoded,ContentDescription">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/relativeLayout"
+    <data>
+        <variable
+            name="tip"
+            type="uk.co.xlntech.architectureapp.data.entities.TipSummary" />
+    </data>
+
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="110dp">
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="5dp"
+        android:foreground="?android:attr/selectableItemBackground"
+        tools:ignore="RtlHardcoded,ContentDescription">
 
-        <ImageView
-            android:id="@+id/tipImage"
-            android:layout_width="110dp"
-            android:layout_height="110dp"
-            android:scaleType="centerCrop"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/relativeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="110dp">
 
-        <TextView
-            android:id="@+id/tipName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:ellipsize="end"
-            android:gravity="center_vertical"
-            android:maxLines="1"
-            android:textColor="#333333"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/tipImage"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Museum Cafe" />
+            <ImageView
+                android:id="@+id/tipImage"
+                android:layout_width="110dp"
+                android:layout_height="110dp"
+                android:scaleType="centerCrop"
+                app:imageUrl="@{tip.image}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/markerImageView"
-            android:layout_width="13dp"
-            android:layout_height="13dp"
-            android:layout_marginBottom="10dp"
-            android:tint="#888888"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/tipDescription"
-            app:srcCompat="@drawable/ic_map_marker" />
+            <TextView
+                android:id="@+id/tipName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:textColor="#333333"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:text="@{tip.name}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tipImage"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Museum Cafe" />
 
-        <TextView
-            android:id="@+id/tipPlace"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="#888888"
-            android:textSize="13sp"
-            app:layout_constraintBottom_toBottomOf="@+id/markerImageView"
-            app:layout_constraintStart_toEndOf="@+id/markerImageView"
-            app:layout_constraintTop_toTopOf="@+id/markerImageView"
-            tools:text="City of London" />
+            <ImageView
+                android:id="@+id/markerImageView"
+                android:layout_width="13dp"
+                android:layout_height="13dp"
+                android:layout_marginBottom="10dp"
+                android:tint="#888888"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/tipDescription"
+                app:srcCompat="@drawable/ic_map_marker" />
 
-        <TextView
-            android:id="@+id/tipAuthor"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="10dp"
-            android:ellipsize="end"
-            android:gravity="end"
-            android:maxLines="1"
-            android:textSize="13sp"
-            app:layout_constraintBottom_toBottomOf="@+id/tipPlace"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/tipPlace"
-            app:layout_constraintTop_toTopOf="@+id/tipPlace"
-            tools:text="by John Doe" />
+            <TextView
+                android:id="@+id/tipPlace"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="#888888"
+                android:textSize="13sp"
+                android:text="@{tip.placeName}"
+                app:layout_constraintBottom_toBottomOf="@+id/markerImageView"
+                app:layout_constraintStart_toEndOf="@+id/markerImageView"
+                app:layout_constraintTop_toTopOf="@+id/markerImageView"
+                tools:text="City of London" />
 
-        <TextView
-            android:id="@+id/tipDescription"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:ellipsize="end"
-            android:lines="3"
-            android:textColor="#555555"
-            android:textSize="13sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/tipImage"
-            app:layout_constraintTop_toBottomOf="@+id/tipName" />
-    </android.support.constraint.ConstraintLayout>
+            <TextView
+                android:id="@+id/tipAuthor"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="10dp"
+                android:ellipsize="end"
+                android:gravity="end"
+                android:maxLines="1"
+                android:textSize="13sp"
+                android:text="@{tip.profileName}"
+                app:layout_constraintBottom_toBottomOf="@+id/tipPlace"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tipPlace"
+                app:layout_constraintTop_toTopOf="@+id/tipPlace"
+                tools:text="by John Doe" />
 
-</androidx.cardview.widget.CardView>
+            <TextView
+                android:id="@+id/tipDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:ellipsize="end"
+                android:lines="3"
+                android:textColor="#555555"
+                android:textSize="13sp"
+                android:text="@{tip.description}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tipImage"
+                app:layout_constraintTop_toBottomOf="@+id/tipName" />
+        </android.support.constraint.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
+</layout>
